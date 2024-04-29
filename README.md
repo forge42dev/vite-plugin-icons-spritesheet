@@ -3,6 +3,10 @@ A Vite plugin to generate a spritesheet with icons from a directory, re-runs on 
 
 Optionally generates TypeScript types for the icon names that it outputs.
 
+If you want to learn more about this approach and it's benefits 
+check it out here:
+https://www.jacobparis.com/content/svg-icons
+
 ## Installation
 ```bash
 npm install -D vite-plugin-icons-spritesheet

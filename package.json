@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-icons-spritesheet",
   "version": "1.0.0",
-  "description": "Minimal open-source stack to help you ship an open-source package in TS",
+  "description": "Vite plugin that generates a spritesheet out of your icons.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
