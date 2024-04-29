@@ -38,8 +38,8 @@ export default {
 Example component file:
 
 ```jsx
-import { type SVGProps } from "react"
 import spriteHref from "~/path/sprite.svg"
+import type { SVGProps } from "react"
 import type { IconName } from "~/path/types.ts"
 
 export function Icon({
