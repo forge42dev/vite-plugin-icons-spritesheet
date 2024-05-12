@@ -2,6 +2,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">
 <defs>
 <symbol id="Test">
+<use xlink:href="#test"></use>
 </symbol>
+<symbol id="D"></symbol>
+<symbol id="C"></symbol>
+<symbol id="B"></symbol>
+<symbol id="A"></symbol>
 </defs>
 </svg>
