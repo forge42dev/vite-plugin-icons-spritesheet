@@ -15,11 +15,11 @@ npm install -D vite-plugin-icons-spritesheet
 ## Usage
 ```javascript
 // vite.config.js
-import { iconSpritesheet } from 'vite-plugin-icons-spritesheet';
+import { iconsSpritesheet } from 'vite-plugin-icons-spritesheet';
 
 export default {
   plugins: [
-     iconSpritesheet({
+     iconsSpritesheet({
       // Defaults to false, should it generate TS types for you
       withTypes: true,
       // The path to the icon directory
