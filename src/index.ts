@@ -123,8 +123,14 @@ async function generateTypes({ names, outputPath }: { names: string[]; outputPat
  * so only write if the content has changed
  */
 async function writeIfChanged(filepath: string, newContent: string, message: string) {
-  const currentContent = await fs.readFile(filepath, "utf8");
-  if (currentContent !== newContent) {
+  try {
+    const currentContent = await fs.readFile(filepath, "utf8");
+    if (currentContent !== newContent) {
+      await fs.writeFile(filepath, newContent, "utf8");
+      console.log(message);
+    }
+  } catch (e) {
+    // File doesn't exist yet
     await fs.writeFile(filepath, newContent, "utf8");
     console.log(message);
   }
