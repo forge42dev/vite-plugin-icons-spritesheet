@@ -14,9 +14,17 @@ interface PluginProps {
   outputDir: string;
   fileName?: string;
   cwd?: string;
+  iconNameTransformer?: (fileName: string) => string;
 }
 
-const generateIcons = async ({ withTypes = false, inputDir, outputDir, cwd, fileName = "sprite.svg" }: PluginProps) => {
+const generateIcons = async ({
+  withTypes = false,
+  inputDir,
+  outputDir,
+  cwd,
+  fileName = "sprite.svg",
+  iconNameTransformer,
+}: PluginProps) => {
   const cwdToUse = cwd ?? process.cwd();
   const inputDirRelative = path.relative(cwdToUse, inputDir);
   const outputDirRelative = path.relative(cwdToUse, outputDir);
@@ -35,13 +43,19 @@ const generateIcons = async ({ withTypes = false, inputDir, outputDir, cwd, file
     inputDir,
     outputPath: path.join(outputDir, fileName),
     outputDirRelative,
+    iconNameTransformer,
   });
   if (withTypes) {
     await generateTypes({
-      names: files.map((file: string) => fileNameToCamelCase(file.replace(/\.svg$/, ""))),
+      names: files.map((file: string) => transformIconName(file, iconNameTransformer ?? fileNameToCamelCase)),
       outputPath: path.join(outputDir, "types.ts"),
     });
   }
+};
+
+const transformIconName = (fileName: string, transformer: (iconName: string) => string) => {
+  const iconName = fileName.replace(/\.svg$/, "");
+  return transformer(iconName);
 };
 
 function fileNameToCamelCase(fileName: string): string {
@@ -57,16 +71,18 @@ async function generateSvgSprite({
   inputDir,
   outputPath,
   outputDirRelative,
+  iconNameTransformer,
 }: {
   files: string[];
   inputDir: string;
   outputPath: string;
   outputDirRelative?: string;
+  iconNameTransformer?: (fileName: string) => string;
 }) {
   // Each SVG becomes a symbol and we wrap them all in a single SVG
   const symbols = await Promise.all(
     files.map(async (file) => {
-      const fileName = fileNameToCamelCase(file.replace(/\.svg$/, ""));
+      const fileName = transformIconName(file, iconNameTransformer ?? fileNameToCamelCase);
       const input = await fs.readFile(path.join(inputDir, file), "utf8");
 
       const root = parse(input);
@@ -86,8 +102,8 @@ async function generateSvgSprite({
     })
   );
   const output = [
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"0\" height=\"0\">",
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">',
     "<defs>", // for semantics: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
     ...symbols.filter(Boolean),
     "</defs>",
@@ -136,39 +152,41 @@ async function writeIfChanged(filepath: string, newContent: string, message: str
   }
 }
 
-export const iconsSpritesheet: (args: PluginProps) => Plugin = ({ withTypes, inputDir, outputDir, fileName, cwd }) => ({
-  name: "icon-spritesheet-generator",
-  apply(config) {
-    return config.mode === "development";
-  },
-  async configResolved() {
-    await generateIcons({
+export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
+  withTypes,
+  inputDir,
+  outputDir,
+  fileName,
+  cwd,
+  iconNameTransformer,
+}) => {
+  const iconGenerator = async () =>
+    generateIcons({
       withTypes,
       inputDir,
       outputDir,
       fileName,
+      iconNameTransformer,
     });
-  },
-  async watchChange(file, type) {
-    const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
-    if (file.includes(inputPath) && file.endsWith(".svg") && ["create", "delete"].includes(type.event)) {
-      await generateIcons({
-        withTypes,
-        inputDir,
-        outputDir,
-        fileName,
-      });
-    }
-  },
-  async handleHotUpdate({ file }) {
-    const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
-    if (file.includes(inputPath) && file.endsWith(".svg")) {
-      await generateIcons({
-        withTypes,
-        inputDir,
-        outputDir,
-        fileName,
-      });
-    }
-  },
-});
+  return {
+    name: "icon-spritesheet-generator",
+    apply(config) {
+      return config.mode === "development";
+    },
+    async configResolved() {
+      await iconGenerator();
+    },
+    async watchChange(file, type) {
+      const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+      if (file.includes(inputPath) && file.endsWith(".svg") && ["create", "delete"].includes(type.event)) {
+        await iconGenerator();
+      }
+    },
+    async handleHotUpdate({ file }) {
+      const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+      if (file.includes(inputPath) && file.endsWith(".svg")) {
+        await iconGenerator();
+      }
+    },
+  };
+};
