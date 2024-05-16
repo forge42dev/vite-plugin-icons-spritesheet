@@ -86,8 +86,8 @@ async function generateSvgSprite({
     })
   );
   const output = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">',
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"0\" height=\"0\">",
     "<defs>", // for semantics: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
     ...symbols.filter(Boolean),
     "</defs>",
@@ -141,20 +141,13 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({ withTypes, inp
   apply(config) {
     return config.mode === "development";
   },
-  async configResolved(config) {
-    const outputSvgPath = normalizePath(path.join(cwd ?? process.cwd(), outputDir, fileName ?? "sprite.svg"));
-    const outputSvgExists = await fs
-      .access(outputSvgPath, fs.constants.F_OK)
-      .then(() => true)
-      .catch(() => false);
-    if (!outputSvgExists) {
-      await generateIcons({
-        withTypes,
-        inputDir,
-        outputDir,
-        fileName,
-      });
-    }
+  async configResolved() {
+    await generateIcons({
+      withTypes,
+      inputDir,
+      outputDir,
+      fileName,
+    });
   },
   async watchChange(file, type) {
     const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));

@@ -3,16 +3,16 @@
 export type IconName =
   | "Test"
   | "De"
-  | "D"
   | "C"
+  | "Bs"
   | "B"
   | "A"
 
 export const iconNames = [
   "Test",
   "De",
-  "D",
   "C",
+  "Bs",
   "B",
   "A",
 ] as const
