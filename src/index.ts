@@ -143,12 +143,11 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({ withTypes, inp
   },
   async configResolved(config) {
     const outputSvgPath = normalizePath(path.join(cwd ?? process.cwd(), outputDir, fileName ?? "sprite.svg"));
-    if (
-      !(await fs
-        .access(outputSvgPath, fs.constants.F_OK)
-        .then(() => true)
-        .catch(() => false))
-    ) {
+    const outputSvgExists = await fs
+      .access(outputSvgPath, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false);
+    if (!outputSvgExists) {
       await generateIcons({
         withTypes,
         inputDir,
