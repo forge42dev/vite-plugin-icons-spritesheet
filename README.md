@@ -30,6 +30,9 @@ export default {
       fileName: "icon.svg",
       // The cwd, defaults to process.cwd()
       cwd: process.cwd(),
+      // Callback function that is called when the script is generating the icon name
+      // This is useful if you want to modify the icon name before it is written to the file
+      iconNameTransformer: (iconName) => iconName
     }),
   ],
 };
