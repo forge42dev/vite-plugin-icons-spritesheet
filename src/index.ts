@@ -12,6 +12,7 @@ interface PluginProps {
   withTypes?: boolean;
   inputDir: string;
   outputDir: string;
+  typesOutputDir?: string;
   fileName?: string;
   cwd?: string;
   iconNameTransformer?: (fileName: string) => string;
@@ -21,6 +22,7 @@ const generateIcons = async ({
   withTypes = false,
   inputDir,
   outputDir,
+  typesOutputDir = outputDir,
   cwd,
   fileName = "sprite.svg",
   iconNameTransformer,
@@ -28,6 +30,7 @@ const generateIcons = async ({
   const cwdToUse = cwd ?? process.cwd();
   const inputDirRelative = path.relative(cwdToUse, inputDir);
   const outputDirRelative = path.relative(cwdToUse, outputDir);
+  const typesOutputDirRelative = path.relative(cwdToUse, typesOutputDir);
 
   const files = glob.sync("**/*.svg", {
     cwd: inputDir,
@@ -45,10 +48,12 @@ const generateIcons = async ({
     outputDirRelative,
     iconNameTransformer,
   });
+
   if (withTypes) {
+    await mkdir(typesOutputDirRelative, { recursive: true });
     await generateTypes({
       names: files.map((file: string) => transformIconName(file, iconNameTransformer ?? fileNameToCamelCase)),
-      outputPath: path.join(outputDir, "types.ts"),
+      outputPath: path.join(typesOutputDir, "types.ts"),
     });
   }
 };
