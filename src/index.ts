@@ -161,6 +161,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
   withTypes,
   inputDir,
   outputDir,
+  typesOutputDir,
   fileName,
   cwd,
   iconNameTransformer,
@@ -170,6 +171,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
       withTypes,
       inputDir,
       outputDir,
+      typesOutputDir,
       fileName,
       iconNameTransformer,
     });
