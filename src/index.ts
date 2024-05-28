@@ -12,6 +12,7 @@ interface PluginProps {
   withTypes?: boolean;
   inputDir: string;
   outputDir: string;
+  typesOutputFile?: string;
   fileName?: string;
   cwd?: string;
   iconNameTransformer?: (fileName: string) => string;
@@ -21,6 +22,7 @@ const generateIcons = async ({
   withTypes = false,
   inputDir,
   outputDir,
+  typesOutputFile = `${outputDir}/types.ts`,
   cwd,
   fileName = "sprite.svg",
   iconNameTransformer,
@@ -45,10 +47,16 @@ const generateIcons = async ({
     outputDirRelative,
     iconNameTransformer,
   });
+
   if (withTypes) {
+    const typesOutputDir = path.dirname(typesOutputFile);
+    const typesFile = path.basename(typesOutputFile);
+    const typesOutputDirRelative = path.relative(cwdToUse, typesOutputDir);
+
+    await mkdir(typesOutputDirRelative, { recursive: true });
     await generateTypes({
       names: files.map((file: string) => transformIconName(file, iconNameTransformer ?? fileNameToCamelCase)),
-      outputPath: path.join(outputDir, "types.ts"),
+      outputPath: path.join(typesOutputDir, typesFile),
     });
   }
 };
@@ -156,6 +164,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
   withTypes,
   inputDir,
   outputDir,
+  typesOutputFile,
   fileName,
   cwd,
   iconNameTransformer,
@@ -165,6 +174,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
       withTypes,
       inputDir,
       outputDir,
+      typesOutputFile,
       fileName,
       iconNameTransformer,
     });
