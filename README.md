@@ -26,6 +26,8 @@ export default {
       inputDir: "icons",
       // Output path for the generated spritesheet and types
       outputDir: "public/icons",
+      // Output path for the generated type file, defaults to types.ts in outputDir
+      typesOutputFile: "app/icons.ts",
       // The name of the generated spritesheet, defaults to sprite.svg
       fileName: "icon.svg",
       // The cwd, defaults to process.cwd()
