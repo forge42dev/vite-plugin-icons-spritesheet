@@ -12,7 +12,7 @@ interface PluginProps {
   withTypes?: boolean;
   inputDir: string;
   outputDir: string;
-  typesOutputDir?: string;
+  typesOutputFile?: string;
   fileName?: string;
   cwd?: string;
   iconNameTransformer?: (fileName: string) => string;
@@ -22,7 +22,7 @@ const generateIcons = async ({
   withTypes = false,
   inputDir,
   outputDir,
-  typesOutputDir = outputDir,
+  typesOutputFile = `${outputDir}/types.ts`,
   cwd,
   fileName = "sprite.svg",
   iconNameTransformer,
@@ -30,7 +30,6 @@ const generateIcons = async ({
   const cwdToUse = cwd ?? process.cwd();
   const inputDirRelative = path.relative(cwdToUse, inputDir);
   const outputDirRelative = path.relative(cwdToUse, outputDir);
-  const typesOutputDirRelative = path.relative(cwdToUse, typesOutputDir);
 
   const files = glob.sync("**/*.svg", {
     cwd: inputDir,
@@ -50,10 +49,14 @@ const generateIcons = async ({
   });
 
   if (withTypes) {
+    const typesOutputDir = path.dirname(typesOutputFile);
+    const typesFile = path.basename(typesOutputFile);
+    const typesOutputDirRelative = path.relative(cwdToUse, typesOutputDir);
+
     await mkdir(typesOutputDirRelative, { recursive: true });
     await generateTypes({
       names: files.map((file: string) => transformIconName(file, iconNameTransformer ?? fileNameToCamelCase)),
-      outputPath: path.join(typesOutputDir, "types.ts"),
+      outputPath: path.join(typesOutputDir, typesFile),
     });
   }
 };
@@ -161,7 +164,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
   withTypes,
   inputDir,
   outputDir,
-  typesOutputDir,
+  typesOutputFile,
   fileName,
   cwd,
   iconNameTransformer,
@@ -171,7 +174,7 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
       withTypes,
       inputDir,
       outputDir,
-      typesOutputDir,
+      typesOutputFile,
       fileName,
       iconNameTransformer,
     });
