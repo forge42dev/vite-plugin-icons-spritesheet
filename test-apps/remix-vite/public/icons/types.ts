@@ -4,7 +4,6 @@ export type IconName =
   | "Test"
   | "De"
   | "C"
-  | "Bs"
   | "B"
   | "A"
 
@@ -12,7 +11,6 @@ export const iconNames = [
   "Test",
   "De",
   "C",
-  "Bs",
   "B",
   "A",
 ] as const

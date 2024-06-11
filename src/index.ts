@@ -160,7 +160,7 @@ async function writeIfChanged(filepath: string, newContent: string, message: str
   }
 }
 
-export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
+export const iconsSpritesheet: (args: PluginProps) => any = ({
   withTypes,
   inputDir,
   outputDir,
@@ -198,5 +198,5 @@ export const iconsSpritesheet: (args: PluginProps) => Plugin = ({
         await iconGenerator();
       }
     },
-  };
+  } satisfies Plugin<any>;
 };

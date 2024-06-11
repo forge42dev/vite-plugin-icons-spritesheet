@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-icons-spritesheet",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Vite plugin that generates a spritesheet out of your icons.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -58,8 +58,10 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "glob": "^10.3.12",
-    "vite": "5.2.11",
     "node-html-parser": "^6.1.13"
+  },
+  "peerDependencies": {
+    "vite": ">=5.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
@@ -73,6 +75,7 @@
     "typescript": "^5.4.5",
     "happy-dom": "^14.7.1",
     "husky": "^9.0.11",
-    "vitest": "^1.5.2"
+    "vitest": "^1.5.2",
+    "vite": "5.2.11"
   }
 }
