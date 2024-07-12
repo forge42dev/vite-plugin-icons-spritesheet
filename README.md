@@ -1,3 +1,10 @@
+![GitHub Repo stars](https://img.shields.io/github/stars/forge42dev/vite-plugin-icons-spritesheet?style=social)
+![npm](https://img.shields.io/npm/v/vite-plugin-icons-spritesheet?style=plastic)
+![GitHub](https://img.shields.io/github/license/forge42dev/vite-plugin-icons-spritesheet?style=plastic)
+![npm](https://img.shields.io/npm/dy/vite-plugin-icons-spritesheet?style=plastic) 
+![npm](https://img.shields.io/npm/dw/vite-plugin-icons-spritesheet?style=plastic) 
+![GitHub top language](https://img.shields.io/github/languages/top/forge42dev/vite-plugin-icons-spritesheet?style=plastic) 
+
 # vite-plugin-icons-spritesheet
 A Vite plugin to generate a spritesheet with icons from a directory, re-runs on every edit/delete/add to the directory that is being watched.
 

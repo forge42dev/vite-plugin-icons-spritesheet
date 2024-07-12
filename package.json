@@ -5,6 +5,13 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "keywords": [
+    "icons",
+    "spritesheet",
+    "vite",
+    "plugin",
+    "generator"
+  ],
   "exports": {
     ".": {
       "import": {
