@@ -1,9 +1,18 @@
+import type { LinksFunction } from "@remix-run/node";
 import type { MetaFunction } from "@remix-run/node";
 // Import and test your package
+import sprite from "../icons/sprite.svg";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
+  return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }, {}];
 };
+
+export const links: LinksFunction = () => [
+  {
+    href: sprite,
+    rel: "icon",
+  },
+];
 
 export default function Index() {
   return (

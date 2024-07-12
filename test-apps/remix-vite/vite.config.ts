@@ -12,7 +12,10 @@ export default defineConfig({
     iconsSpritesheet({
       withTypes: true,
       inputDir: "icons",
-      outputDir: "public/icons",
+      outputDir: "./app/icons",
     }),
   ],
+  build: {
+    assetsInlineLimit: 0,
+  },
 });
