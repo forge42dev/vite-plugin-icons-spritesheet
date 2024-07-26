@@ -4,6 +4,7 @@ export const iconNames = [
   "Test",
   "De",
   "C",
+  "BasicShapes",
   "B",
   "A",
 ] as const
