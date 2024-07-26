@@ -7,6 +7,7 @@ import chalk from "chalk";
 import type { Plugin } from "vite";
 import { normalizePath } from "vite";
 import { mkdir } from "node:fs/promises";
+import { optimize, type Config as SvgoConfig } from "svgo";
 
 interface PluginProps {
   withTypes?: boolean;
@@ -16,6 +17,10 @@ interface PluginProps {
   fileName?: string;
   cwd?: string;
   iconNameTransformer?: (fileName: string) => string;
+  svgo?: {
+    enabled?: boolean;
+    options?: SvgoConfig;
+  };
 }
 
 const generateIcons = async ({
@@ -26,6 +31,7 @@ const generateIcons = async ({
   cwd,
   fileName = "sprite.svg",
   iconNameTransformer,
+  svgo,
 }: PluginProps) => {
   const cwdToUse = cwd ?? process.cwd();
   const inputDirRelative = path.relative(cwdToUse, inputDir);
@@ -46,6 +52,7 @@ const generateIcons = async ({
     outputPath: path.join(outputDir, fileName),
     outputDirRelative,
     iconNameTransformer,
+    svgo,
   });
 
   if (withTypes) {
@@ -80,18 +87,28 @@ async function generateSvgSprite({
   outputPath,
   outputDirRelative,
   iconNameTransformer,
+  svgo,
 }: {
   files: string[];
   inputDir: string;
   outputPath: string;
   outputDirRelative?: string;
   iconNameTransformer?: (fileName: string) => string;
+  svgo?: {
+    enabled?: boolean;
+    options?: SvgoConfig;
+  };
 }) {
   // Each SVG becomes a symbol and we wrap them all in a single SVG
   const symbols = await Promise.all(
     files.map(async (file) => {
       const fileName = transformIconName(file, iconNameTransformer ?? fileNameToCamelCase);
-      const input = await fs.readFile(path.join(inputDir, file), "utf8");
+      let input = await fs.readFile(path.join(inputDir, file), "utf8");
+      if (svgo?.enabled ?? true) {
+        input = await optimizeSvg(input, {
+          ...svgo?.options,
+        });
+      }
 
       const root = parse(input);
       const svg = root.querySelector("svg");
@@ -119,6 +136,10 @@ async function generateSvgSprite({
   ].join("\n");
 
   return writeIfChanged(outputPath, output, `🖼️  Generated SVG spritesheet in ${chalk.green(outputDirRelative)}`);
+}
+
+async function optimizeSvg(svg: string, svgoOptions?: SvgoConfig) {
+  return optimize(svg, svgoOptions).data;
 }
 
 async function generateTypes({ names, outputPath }: { names: string[]; outputPath: string }) {
@@ -169,6 +190,7 @@ export const iconsSpritesheet: (args: PluginProps) => any = ({
   fileName,
   cwd,
   iconNameTransformer,
+  svgo,
 }) => {
   const iconGenerator = async () =>
     generateIcons({
@@ -178,6 +200,7 @@ export const iconsSpritesheet: (args: PluginProps) => any = ({
       typesOutputFile,
       fileName,
       iconNameTransformer,
+      svgo,
     });
   return {
     name: "icon-spritesheet-generator",
