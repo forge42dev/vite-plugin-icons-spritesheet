@@ -46,7 +46,7 @@
     "prepare": "husky"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/forge42dev/vite-plugin-icons-spritesheet.git"
