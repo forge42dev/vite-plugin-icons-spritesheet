@@ -42,6 +42,8 @@ export default {
       // Callback function that is called when the script is generating the icon name
       // This is useful if you want to modify the icon name before it is written to the file
       iconNameTransformer: (iconName) => iconName
+      // Svgo, defaults to { enabled: true }
+      svgo: { options: { plugins: [] } }
     }),
   ],
 };

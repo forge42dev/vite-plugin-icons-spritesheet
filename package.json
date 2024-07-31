@@ -65,7 +65,8 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "glob": "^10.3.12",
-    "node-html-parser": "^6.1.13"
+    "node-html-parser": "^6.1.13",
+    "svgo": "^3.3.2"
   },
   "peerDependencies": {
     "vite": ">=5.2.0"
@@ -77,12 +78,12 @@
     "@vitest/coverage-v8": "^1.5.2",
     "eslint": "8.56",
     "eslint-plugin-unused-imports": "^3.1.0",
+    "happy-dom": "^14.7.1",
+    "husky": "^9.0.11",
     "npm-run-all": "^4.1.5",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
-    "happy-dom": "^14.7.1",
-    "husky": "^9.0.11",
-    "vitest": "^1.5.2",
-    "vite": "5.2.11"
+    "vite": "5.2.11",
+    "vitest": "^1.5.2"
   }
 }
