@@ -128,9 +128,9 @@ async function generateTypes({ names, outputPath }: { names: string[]; outputPat
 
     "export const iconNames = [",
     ...names.map((name) => `  "${name}",`),
-    "] as const",
+    "] as const;",
     "",
-    "export type IconName = typeof iconNames[number]",
+    "export type IconName = (typeof iconNames)[number];",
     "",
   ].join("\n");
 
