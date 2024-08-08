@@ -7,14 +7,60 @@ import chalk from "chalk";
 import type { Plugin } from "vite";
 import { normalizePath } from "vite";
 import { mkdir } from "node:fs/promises";
+import { Biome, Distribution } from "@biomejs/js-api";
+import * as prettier from "prettier";
+
+type Formatter = "biome" | "prettier";
 
 interface PluginProps {
+  /**
+   * Should the plugin generate TypeScript types for the icon names
+   * @default false
+   */
   withTypes?: boolean;
+  /**
+   * The path to the icon directory
+   * @example "./icons"
+   */
   inputDir: string;
+  /**
+   * Output path for the generated
+   * @example "./public/icons"
+   */
   outputDir: string;
+  /**
+   * Output path for the generated type file
+   * @example "./app/types.ts"
+   */
   typesOutputFile?: string;
+  /**
+   * The name of the generated spritesheet
+   * @default sprite.svg
+   * @example "icon.svg"
+   */
   fileName?: string;
+  /**
+   * What formatter to use to format the generated files. Can be "biome" or "prettier"
+   * @default no formatter
+   * @example "biome"
+   */
+  formatter?: Formatter;
+  /**
+   * The path to the formatter config file
+   * @default no path
+   * @example "./biome.json"
+   */
+  pathToFormatterConfig?: string;
+  /**
+   * The cwd, defaults to process.cwd()
+   * @default process.cwd()
+   */
   cwd?: string;
+  /**
+   * Callback function that is called when the script is generating the icon name
+   * This is useful if you want to modify the icon name before it is written to the file
+   * @example (iconName) => iconName.replace("potato", "mash-em,boil-em,put-em-in-a-stew")
+   */
   iconNameTransformer?: (fileName: string) => string;
 }
 
@@ -24,6 +70,8 @@ const generateIcons = async ({
   outputDir,
   typesOutputFile = `${outputDir}/types.ts`,
   cwd,
+  formatter,
+  pathToFormatterConfig,
   fileName = "sprite.svg",
   iconNameTransformer,
 }: PluginProps) => {
@@ -46,6 +94,8 @@ const generateIcons = async ({
     outputPath: path.join(outputDir, fileName),
     outputDirRelative,
     iconNameTransformer,
+    formatter,
+    pathToFormatterConfig,
   });
 
   if (withTypes) {
@@ -57,6 +107,8 @@ const generateIcons = async ({
     await generateTypes({
       names: files.map((file: string) => transformIconName(file, iconNameTransformer ?? fileNameToCamelCase)),
       outputPath: path.join(typesOutputDir, typesFile),
+      formatter,
+      pathToFormatterConfig,
     });
   }
 };
@@ -80,12 +132,26 @@ async function generateSvgSprite({
   outputPath,
   outputDirRelative,
   iconNameTransformer,
+  formatter,
+  pathToFormatterConfig,
 }: {
   files: string[];
   inputDir: string;
   outputPath: string;
   outputDirRelative?: string;
   iconNameTransformer?: (fileName: string) => string;
+  /**
+   * What formatter to use to format the generated files. Can be "biome" or "prettier"
+   * @default no formatter
+   * @example "biome"
+   */
+  formatter?: Formatter;
+  /**
+   * The path to the formatter config file
+   * @default no path
+   * @example "./biome.json"
+   */
+  pathToFormatterConfig?: string;
 }) {
   // Each SVG becomes a symbol and we wrap them all in a single SVG
   const symbols = await Promise.all(
@@ -117,11 +183,67 @@ async function generateSvgSprite({
     "</defs>",
     "</svg>",
   ].join("\n");
+  const formattedOutput = await lintFileContent(output, formatter, pathToFormatterConfig, "svg");
 
-  return writeIfChanged(outputPath, output, `🖼️  Generated SVG spritesheet in ${chalk.green(outputDirRelative)}`);
+  return writeIfChanged(
+    outputPath,
+    formattedOutput,
+    `🖼️  Generated SVG spritesheet in ${chalk.green(outputDirRelative)}`
+  );
 }
 
-async function generateTypes({ names, outputPath }: { names: string[]; outputPath: string }) {
+async function tryReadFile(path: string): Promise<string | undefined> {
+  return fs.readFile(path, "utf8").catch(() => undefined);
+}
+
+function tryParseJson(json: string | undefined): Record<string, unknown> | undefined {
+  if (!json) {
+    return undefined;
+  }
+  try {
+    const data = JSON.parse(json);
+    return data;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+async function lintFileContent(
+  fileContent: string,
+  formatter: Formatter | undefined,
+  pathToFormatterConfig: string | undefined,
+  typeOfFile: "ts" | "svg"
+) {
+  if (!formatter) {
+    return fileContent;
+  }
+  const formatterConfig = pathToFormatterConfig ? await tryReadFile(pathToFormatterConfig) : undefined;
+  const formatterConfigJson = tryParseJson(formatterConfig);
+  // TODO biome formatter for svg (atm it doesn't work)
+  if (formatter === "biome" && typeOfFile === "ts") {
+    const biome = await Biome.create({
+      distribution: Distribution.NODE,
+    });
+    if (formatterConfigJson) {
+      biome.applyConfiguration(formatterConfigJson);
+    }
+    return biome.formatContent(fileContent, {
+      filePath: "temp.ts",
+    }).content;
+  }
+
+  return prettier.format(fileContent, {
+    parser: typeOfFile === "ts" ? "typescript" : "html",
+    ...formatterConfigJson,
+  });
+}
+
+async function generateTypes({
+  names,
+  outputPath,
+  formatter,
+  pathToFormatterConfig,
+}: { names: string[]; outputPath: string } & Pick<PluginProps, "formatter" | "pathToFormatterConfig">) {
   const output = [
     "// This file is generated by icon spritesheet generator",
     "",
@@ -133,10 +255,11 @@ async function generateTypes({ names, outputPath }: { names: string[]; outputPat
     "export type IconName = typeof iconNames[number]",
     "",
   ].join("\n");
+  const formattedOutput = await lintFileContent(output, formatter, pathToFormatterConfig, "ts");
 
   const file = await writeIfChanged(
     outputPath,
-    output,
+    formattedOutput,
     `${chalk.blueBright("TS")} Generated icon types in ${chalk.green(outputPath)}`
   );
   return file;
@@ -161,41 +284,50 @@ async function writeIfChanged(filepath: string, newContent: string, message: str
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const iconsSpritesheet: (args: PluginProps) => any = ({
-  withTypes,
-  inputDir,
-  outputDir,
-  typesOutputFile,
-  fileName,
-  cwd,
-  iconNameTransformer,
-}) => {
-  const iconGenerator = async () =>
-    generateIcons({
+export const iconsSpritesheet: (args: PluginProps | PluginProps[]) => any = (maybeConfigs) => {
+  const configs = Array.isArray(maybeConfigs) ? maybeConfigs : [maybeConfigs];
+
+  return configs.map((config, i) => {
+    const {
       withTypes,
       inputDir,
       outputDir,
       typesOutputFile,
       fileName,
+      cwd,
       iconNameTransformer,
-    });
-  return {
-    name: "icon-spritesheet-generator",
-    async buildStart() {
-      await iconGenerator();
-    },
-    async watchChange(file, type) {
-      const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
-      if (file.includes(inputPath) && file.endsWith(".svg") && ["create", "delete"].includes(type.event)) {
+      formatter,
+      pathToFormatterConfig,
+    } = config;
+    const iconGenerator = async () =>
+      generateIcons({
+        withTypes,
+        inputDir,
+        outputDir,
+        typesOutputFile,
+        fileName,
+        iconNameTransformer,
+        formatter,
+        pathToFormatterConfig,
+      });
+    return {
+      name: `icon-spritesheet-generator${i > 0 ? i.toString() : ""}`,
+      async buildStart() {
         await iconGenerator();
-      }
-    },
-    async handleHotUpdate({ file }) {
-      const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
-      if (file.includes(inputPath) && file.endsWith(".svg")) {
-        await iconGenerator();
-      }
-    },
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  } satisfies Plugin<any>;
+      },
+      async watchChange(file, type) {
+        const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+        if (file.includes(inputPath) && file.endsWith(".svg") && ["create", "delete"].includes(type.event)) {
+          await iconGenerator();
+        }
+      },
+      async handleHotUpdate({ file }) {
+        const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+        if (file.includes(inputPath) && file.endsWith(".svg")) {
+          await iconGenerator();
+        }
+      },
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    } satisfies Plugin<any>;
+  });
 };

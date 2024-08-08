@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-icons-spritesheet",
-  "version": "2.0.0",
-  "description": "Vite plugin that generates a spritesheet out of your icons.",
+  "version": "2.1.0",
+  "description": "Vite plugin that generates a spritesheet and types out of your icons folder.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -10,7 +10,12 @@
     "spritesheet",
     "vite",
     "plugin",
-    "generator"
+    "generator",
+    "react",
+    "angular",
+    "vue",
+    "nextjs",
+    "remix"
   ],
   "exports": {
     ".": {
@@ -63,9 +68,12 @@
   ],
   "homepage": "https://github.com/forge42dev/vite-plugin-icons-spritesheet#readme",
   "dependencies": {
+    "@biomejs/js-api": "^0.6.2",
+    "@biomejs/wasm-nodejs": "^1.8.3",
     "chalk": "^4.1.2",
     "glob": "^10.3.12",
-    "node-html-parser": "^6.1.13"
+    "node-html-parser": "^6.1.13",
+    "prettier": "^3.3.3"
   },
   "peerDependencies": {
     "vite": ">=5.2.0"
@@ -77,12 +85,12 @@
     "@vitest/coverage-v8": "^1.5.2",
     "eslint": "8.56",
     "eslint-plugin-unused-imports": "^3.1.0",
+    "happy-dom": "^14.7.1",
+    "husky": "^9.0.11",
     "npm-run-all": "^4.1.5",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
-    "happy-dom": "^14.7.1",
-    "husky": "^9.0.11",
-    "vitest": "^1.5.2",
-    "vite": "5.2.11"
+    "vite": "5.2.11",
+    "vitest": "^1.5.2"
   }
 }

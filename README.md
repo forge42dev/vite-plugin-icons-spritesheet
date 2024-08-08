@@ -39,6 +39,10 @@ export default {
       fileName: "icon.svg",
       // The cwd, defaults to process.cwd()
       cwd: process.cwd(),
+      // What formatter to use to format the generated files, prettier or biome, defaults to no formatter
+      formatter: "biome",
+      // The path to the formatter config file, defaults to no path
+      pathToFormatterConfig: "./biome.json",
       // Callback function that is called when the script is generating the icon name
       // This is useful if you want to modify the icon name before it is written to the file
       iconNameTransformer: (iconName) => iconName
@@ -46,6 +50,34 @@ export default {
   ],
 };
 ```
+
+You can also pass an array of configs to the plugin to generate multiple spritesheets and types files at the same time (and watch those folders for changes).
+```javascript
+// vite.config.js
+import { iconsSpritesheet } from 'vite-plugin-icons-spritesheet';
+
+export default {
+  plugins: [
+     iconsSpritesheet([
+      { 
+        withTypes: true, 
+        inputDir: "icons/subset1", 
+        outputDir: "public/icons1", 
+        typesOutputFile: "app/icons1.ts", 
+        fileName: "icon1.svg", 
+      },
+      { 
+        withTypes: true, 
+        inputDir: "icons/subset2",
+        outputDir: "public/icons2", 
+        typesOutputFile: "app/icons2.ts", 
+        fileName: "icon2.svg", 
+      },
+    ]),
+  ],
+};
+```
+
 
 Example component file:
 

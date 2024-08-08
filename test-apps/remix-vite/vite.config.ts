@@ -9,11 +9,22 @@ export default defineConfig({
   plugins: [
     remix(),
     tsconfigPaths(),
-    iconsSpritesheet({
-      withTypes: true,
-      inputDir: "icons",
-      outputDir: "./app/icons",
-    }),
+    iconsSpritesheet([
+      {
+        withTypes: true,
+        inputDir: "icons",
+        outputDir: "./app/icons",
+        formatter: "prettier",
+       // pathToFormatterConfig: "./biome.json",
+      },
+      {
+        withTypes: true,
+        inputDir: "icons",
+        outputDir: "./public/icons",
+        formatter: "biome",
+      //  pathToFormatterConfig: "./biome.json",
+      }
+    ]),
   ],
   build: {
     assetsInlineLimit: 0,
