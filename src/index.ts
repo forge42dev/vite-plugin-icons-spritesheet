@@ -173,7 +173,7 @@ async function generateSvgSprite({
       svg.removeAttribute("width");
       svg.removeAttribute("height");
       return svg.toString().trim();
-    })
+    }),
   );
   const output = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -188,7 +188,7 @@ async function generateSvgSprite({
   return writeIfChanged(
     outputPath,
     formattedOutput,
-    `🖼️  Generated SVG spritesheet in ${chalk.green(outputDirRelative)}`
+    `🖼️  Generated SVG spritesheet in ${chalk.green(outputDirRelative)}`,
   );
 }
 
@@ -212,7 +212,7 @@ async function lintFileContent(
   fileContent: string,
   formatter: Formatter | undefined,
   pathToFormatterConfig: string | undefined,
-  typeOfFile: "ts" | "svg"
+  typeOfFile: "ts" | "svg",
 ) {
   if (!formatter) {
     return fileContent;
@@ -260,7 +260,7 @@ async function generateTypes({
   const file = await writeIfChanged(
     outputPath,
     formattedOutput,
-    `${chalk.blueBright("TS")} Generated icon types in ${chalk.green(outputPath)}`
+    `${chalk.blueBright("TS")} Generated icon types in ${chalk.green(outputPath)}`,
   );
   return file;
 }
@@ -286,7 +286,7 @@ async function writeIfChanged(filepath: string, newContent: string, message: str
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const iconsSpritesheet: (args: PluginProps | PluginProps[]) => any = (maybeConfigs) => {
   const configs = Array.isArray(maybeConfigs) ? maybeConfigs : [maybeConfigs];
-
+  const allSpriteSheetNames = configs.map((config) => config.fileName ?? "sprite.svg");
   return configs.map((config, i) => {
     const {
       withTypes,
@@ -310,24 +310,53 @@ export const iconsSpritesheet: (args: PluginProps | PluginProps[]) => any = (may
         formatter,
         pathToFormatterConfig,
       });
+    const workDir = cwd ?? process.cwd();
     return {
       name: `icon-spritesheet-generator${i > 0 ? i.toString() : ""}`,
       async buildStart() {
         await iconGenerator();
       },
       async watchChange(file, type) {
-        const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+        const inputPath = normalizePath(path.join(workDir, inputDir));
         if (file.includes(inputPath) && file.endsWith(".svg") && ["create", "delete"].includes(type.event)) {
           await iconGenerator();
         }
       },
       async handleHotUpdate({ file }) {
-        const inputPath = normalizePath(path.join(cwd ?? process.cwd(), inputDir));
+        const inputPath = normalizePath(path.join(workDir, inputDir));
         if (file.includes(inputPath) && file.endsWith(".svg")) {
           await iconGenerator();
         }
       },
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    } satisfies Plugin<any>;
+      // Augment the config with our own assetsInlineLimit function, we want to do this only once
+      async configResolved(config) {
+        if (i === 0) {
+          const subFunc =
+            typeof config.build.assetsInlineLimit === "function" ? config.build.assetsInlineLimit : undefined;
+          const limit = typeof config.build.assetsInlineLimit === "number" ? config.build.assetsInlineLimit : undefined;
+
+          config.build.assetsInlineLimit = (name, content) => {
+            const isSpriteSheet = allSpriteSheetNames.some((spriteSheetName) => {
+              return name === normalizePath(`${workDir}/${outputDir}/${spriteSheetName}`);
+            });
+            // Our spritesheet? Early return
+            if (isSpriteSheet) {
+              return false;
+            }
+            // User defined limit? Check if it's smaller than the limit
+            if (limit) {
+              const size = content.byteLength;
+              return size <= limit;
+            }
+            // User defined function? Run it
+            if (typeof subFunc === "function") {
+              return subFunc(name, content);
+            }
+
+            return undefined;
+          };
+        }
+      },
+    } satisfies Plugin<unknown>;
   });
 };

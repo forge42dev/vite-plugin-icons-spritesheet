@@ -15,18 +15,18 @@ export default defineConfig({
         inputDir: "icons",
         outputDir: "./app/icons",
         formatter: "prettier",
-       // pathToFormatterConfig: "./biome.json",
+        // pathToFormatterConfig: "./biome.json",
       },
       {
         withTypes: true,
         inputDir: "icons",
         outputDir: "./public/icons",
         formatter: "biome",
-      //  pathToFormatterConfig: "./biome.json",
-      }
+        //  pathToFormatterConfig: "./biome.json",
+      },
     ]),
   ],
   build: {
-    assetsInlineLimit: 0,
+    assetsInlineLimit: 1024 * 1024 * 10,
   },
 });
