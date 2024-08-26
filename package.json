@@ -34,7 +34,7 @@
   "scripts": {
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "build": "tsup src/index.ts  --dts --format esm,cjs --outDir dist --minify --clean",
+    "build": "tsup src/index.ts  --dts --format esm,cjs --outDir dist --clean",
     "remix:dev": "npm run dev -w test-apps/remix-vite",
     "remix:cjs:dev": "npm run dev -w test-apps/remix-vite-cjs",
     "build:dev": "tsup src/index.ts --dts --format cjs,esm  --outDir dist",
