@@ -337,7 +337,7 @@ export const iconsSpritesheet: (args: PluginProps | PluginProps[]) => any = (may
 
           config.build.assetsInlineLimit = (name, content) => {
             const isSpriteSheet = allSpriteSheetNames.some((spriteSheetName) => {
-              return name === normalizePath(`${workDir}/${outputDir}/${spriteSheetName}`);
+              return name === normalizePath(`${outputDir}/${spriteSheetName}`);
             });
             // Our spritesheet? Early return
             if (isSpriteSheet) {
